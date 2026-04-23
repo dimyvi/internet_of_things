@@ -80,3 +80,22 @@ class Pump(Device):
     def disconnect(self):
         self.status = "off"
         print(f"Насос {self.name} Отключен")
+
+import random
+
+class Sensor(Device):
+    def __init__(self, id: int, name: str):
+        super().__init__(id, name)
+        self.value = 0
+        print(f"Сенсор {self.name} создан")
+
+    def emulate(self):
+        self.value = random.randint(15, 25)
+
+    def connect(self):
+        self.emulate()
+        self.status = "on"
+        return {"value": self.value}
+
+    def disconnect(self):
+        self.status = "off"
