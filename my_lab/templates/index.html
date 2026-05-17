@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>IoT Lab 6</title>
+</head>
+
+<body>
+
+<h2>IoT Управление</h2>
+
+<hr>
+
+<h3>Сенсор</h3>
+<input id="cmd4" placeholder="read">
+<button onclick="send(4,'cmd4')">Send</button>
+
+<hr>
+
+<h3>Обогреватель</h3>
+<input id="cmd5" placeholder="on / off / set:20">
+<button onclick="send(5,'cmd5')">Send</button>
+
+<hr>
+
+<h2>Результат</h2>
+<pre id="out"></pre>
+
+<script>
+
+function send(id, inputId){
+
+    let cmd = document.getElementById(inputId).value;
+
+    fetch(`/command/${id}?cmd=${cmd}`)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById("out").innerText =
+                JSON.stringify(data, null, 2);
+        });
+
+}
+
+</script>
+
+</body>
+</html>

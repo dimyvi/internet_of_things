@@ -5,7 +5,6 @@ import random
 class Device(ABC):
 
     def __init__(self, id: int, name: str):
-
         self.id = id
         self.name = name
         self.status = "off"
@@ -18,184 +17,161 @@ class Device(ABC):
     def disconnect(self):
         pass
 
-    def execute_command(self, cmd):
-
-        return {"result": "unknown command"}
-
 
 class Lamp(Device):
 
     def __init__(self, id: int, name: str, brightness: int):
-
         super().__init__(id, name)
-
         self.brightness = brightness
-        self.status = "off"
 
     def connect(self):
-
         self.status = "on"
 
-        print(f"Лампа {self.name} включена")
-
     def disconnect(self):
-
         self.status = "off"
-
-        print(f"Лампа {self.name} выключена")
-
-    def change_brightness(self, brightness):
-
-        self.brightness = brightness
 
     def execute_command(self, cmd):
 
         if cmd == "on":
-
             self.connect()
+            return {"lamp": "on"}
 
-            return {"result": "lamp on"}
-
-        elif cmd == "off":
-
+        if cmd == "off":
             self.disconnect()
+            return {"lamp": "off"}
 
-            return {"result": "lamp off"}
+        if cmd.startswith("brightness:"):
+            try:
+                value = int(cmd.split(":")[1])
+                self.brightness = value
+                return {"brightness": self.brightness}
+            except:
+                return {"error": "invalid brightness"}
 
-        elif cmd.startswith("brightness:"):
-
-            value = int(cmd.split(":")[1])
-
-            self.change_brightness(value)
-
-            return {
-                "result": "brightness changed",
-                "brightness": self.brightness
-            }
-
-        return {"result": "unknown command"}
+        return {"error": "unknown command"}
 
 
 class Fan(Device):
 
     def __init__(self, id: int, name: str, speed: int):
-
         super().__init__(id, name)
-
         self.speed = speed
-        self.status = "off"
 
     def connect(self):
-
         self.status = "on"
 
-        print(f"Вентилятор {self.name} включен")
-
     def disconnect(self):
-
         self.status = "off"
-
-        print(f"Вентилятор {self.name} выключен")
-
-    def change_speed(self, speed):
-
-        self.speed = speed
 
     def execute_command(self, cmd):
 
         if cmd == "on":
-
             self.connect()
+            return {"fan": "on"}
 
-            return {"result": "fan on"}
-
-        elif cmd == "off":
-
+        if cmd == "off":
             self.disconnect()
+            return {"fan": "off"}
 
-            return {"result": "fan off"}
+        if cmd.startswith("speed:"):
+            try:
+                value = int(cmd.split(":")[1])
+                self.speed = value
+                return {"speed": self.speed}
+            except:
+                return {"error": "invalid speed"}
 
-        elif cmd.startswith("speed:"):
-
-            value = int(cmd.split(":")[1])
-
-            self.change_speed(value)
-
-            return {
-                "result": "speed changed",
-                "speed": self.speed
-            }
-
-        return {"result": "unknown command"}
+        return {"error": "unknown command"}
 
 
 class Pump(Device):
 
-    def __init__(self, id: int, name: str):
-
-        super().__init__(id, name)
-
     def connect(self):
-
         self.status = "on"
 
-        print(f"Насос {self.name} включен")
-
     def disconnect(self):
-
         self.status = "off"
-
-        print(f"Насос {self.name} выключен")
 
     def execute_command(self, cmd):
 
         if cmd == "on":
-
             self.connect()
+            return {"pump": "on"}
 
-            return {"result": "pump on"}
-
-        elif cmd == "off":
-
+        if cmd == "off":
             self.disconnect()
+            return {"pump": "off"}
 
-            return {"result": "pump off"}
-
-        return {"result": "unknown command"}
+        return {"error": "unknown command"}
 
 
 class Sensor(Device):
 
     def __init__(self, id: int, name: str):
-
         super().__init__(id, name)
-
         self.value = 0
+        self.linked_heater = None
 
     def emulate(self):
-
-        self.value = random.randint(15, 30)
+        self.value = random.randint(10, 35)
 
     def connect(self):
-
         self.emulate()
-
         self.status = "on"
 
-        return {"value": self.value}
+        # 🔥 АВТОМАТИКА
+        if self.linked_heater:
+            self.linked_heater.auto_power(self.value)
+
+        return {"temperature": self.value}
 
     def disconnect(self):
-
         self.status = "off"
+
+
+class Heater(Device):
+
+    def __init__(self, id: int, name: str, threshold: float = 25):
+        super().__init__(id, name)
+        self.threshold = threshold
+
+    def connect(self):
+        self.status = "on"
+
+    def disconnect(self):
+        self.status = "off"
+
+    def auto_power(self, temperature):
+
+        try:
+            t = float(temperature)
+
+            if t < self.threshold:
+                self.connect()
+                return {"heater": "ON", "temp": t}
+
+            else:
+                self.disconnect()
+                return {"heater": "OFF", "temp": t}
+
+        except:
+            return {"error": "bad temperature"}
 
     def execute_command(self, cmd):
 
-        if cmd == "read":
+        if cmd == "on":
+            self.connect()
+            return {"heater": "on"}
 
-            self.emulate()
+        if cmd == "off":
+            self.disconnect()
+            return {"heater": "off"}
 
-            return {
-                "value": self.value
-            }
+        if cmd.startswith("set:"):
+            try:
+                self.threshold = float(cmd.split(":")[1])
+                return {"threshold": self.threshold}
+            except:
+                return {"error": "invalid threshold"}
 
-        return {"result": "unknown command"}
+        return {"error": "unknown command"}
