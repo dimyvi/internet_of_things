@@ -1,17 +1,82 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Умная теплица</title>
+<html lang="ru">
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="/static/js/index.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <title>Умная теплица</title>
 </head>
 
 <body>
 
+<h1>Управление устройствами</h1>
+
+<hr>
+
+<h2>Лампа</h2>
+
+<input type="text" id="lamp_cmd" placeholder="on / off / brightness:80">
+
+<button onclick="sendCommand(1, 'lamp_cmd')">
+    Отправить
+</button>
+
+<hr>
+
+<h2>Вентилятор</h2>
+
+<input type="text" id="fan_cmd" placeholder="on / off / speed:5">
+
+<button onclick="sendCommand(2, 'fan_cmd')">
+    Отправить
+</button>
+
+<hr>
+
+<h2>Насос</h2>
+
+<input type="text" id="pump_cmd" placeholder="on / off">
+
+<button onclick="sendCommand(3, 'pump_cmd')">
+    Отправить
+</button>
+
+<hr>
+
 <h2>Датчик температуры</h2>
 
-<input type="text" id="value" placeholder="Значение">
+<input type="text" id="sensor_cmd" placeholder="read">
+
+<button onclick="sendCommand(4, 'sensor_cmd')">
+    Отправить
+</button>
+
+<hr>
+
+<h2>Результат</h2>
+
+<div id="result"></div>
+
+
+<script>
+
+function sendCommand(id, inputId) {
+
+    let cmd = document.getElementById(inputId).value;
+
+    fetch(`/command/${id}?cmd=${cmd}`)
+
+        .then(response => response.json())
+
+        .then(data => {
+
+            document.getElementById("result").innerHTML =
+                JSON.stringify(data);
+
+        });
+
+}
+
+</script>
 
 </body>
 </html>
